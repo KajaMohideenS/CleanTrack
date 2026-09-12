@@ -31,9 +31,9 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const getOrder = useCallback(
     (id: string) => {
-      return orderRepository.getOrderById(id);
+      const trimmedId = id.trim().toUpperCase();
+      return orders.find((o) => o.id.toUpperCase() === trimmedId);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [orders]
   );
 

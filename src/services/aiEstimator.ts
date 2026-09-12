@@ -2,9 +2,9 @@ import { Order, ServiceType } from '../types/order';
 
 export interface EstimationResult {
   estimatedReadyAt: string; // Formatted date/time, e.g. "Today around 6:30 PM"
-  estimatedReadyAtISO: string; // ISO string for sorting/data
+  estimatedReadyAtISO: string; // ISO string
   estimatedHours: number;
-  explanation: string; // Transparent factor explanation
+  explanation: string; // Simplified, human customer-facing explanation
   confidenceLevel: 'Standard Estimate' | 'High Workload Estimate';
   disclaimer: string;
 }
@@ -12,14 +12,14 @@ export interface EstimationResult {
 /**
  * AI-Assisted Ready-Time Estimation Service (Prototype Local Simulation)
  *
- * NOTE: This is an intentional heuristic simulation designed for this local prototype.
+ * NOTE: This is a transparent heuristic simulation designed for this local prototype.
  * It demonstrates the user experience and architectural seam for AI-assisted scheduling
- * without fabricating machine learning claims or querying paid external APIs.
+ * without fabricating machine learning claims or querying external APIs.
  *
- * It considers:
- * 1. Base duration by Service type
- * 2. Fabric complexity heuristic from garment title
- * 3. Shop queue backlog (active unfinished orders ahead in queue)
+ * Factors:
+ * 1. Service base cycle duration
+ * 2. Garment fabric & construction complexity
+ * 3. Shop queue backlog (active orders ahead in queue)
  */
 export function estimateReadyTime(
   params: {
@@ -54,20 +54,20 @@ export function estimateReadyTime(
   // 2. Garment complexity factor (heuristic)
   const garmentLower = params.garment.toLowerCase();
   let complexityAdjustment = 0;
-  let complexityReason = 'standard garment profile';
+  let complexityReason = 'standard garment care';
 
   if (garmentLower.includes('suit') || garmentLower.includes('tuxedo')) {
     complexityAdjustment = 2;
-    complexityReason = 'multi-piece tailoring requiring dedicated press';
+    complexityReason = 'multi-piece tailoring care';
   } else if (garmentLower.includes('silk') || garmentLower.includes('wool') || garmentLower.includes('cashmere')) {
     complexityAdjustment = 1.5;
-    complexityReason = 'delicate fabric requiring low-temp gentle cycle';
+    complexityReason = 'delicate fabric treatment';
   } else if (garmentLower.includes('blazer') || garmentLower.includes('coat') || garmentLower.includes('jacket')) {
     complexityAdjustment = 1;
-    complexityReason = 'structured garment requiring form shaping';
+    complexityReason = 'structured garment shaping';
   } else if (garmentLower.includes('shirt') || garmentLower.includes('t-shirt')) {
     complexityAdjustment = -0.5;
-    complexityReason = 'standard cotton batching';
+    complexityReason = 'standard garment batching';
   }
 
   // 3. Shop backlog factor (active orders not yet ready)
@@ -75,11 +75,8 @@ export function estimateReadyTime(
     (o) => o.status === 'RECEIVED' || o.status === 'CLEANING'
   ).length;
 
-  // Add 0.5 hours per 2 queued orders (up to max 4 hours)
   const queueAdjustment = Math.min(4, Math.round(activeOrdersInQueue * 0.4 * 10) / 10);
-
   const totalHours = Math.max(1, Math.round((baseHours + complexityAdjustment + queueAdjustment) * 10) / 10);
-
   const targetDate = new Date(baseDate.getTime() + totalHours * 60 * 60 * 1000);
 
   // Format friendly ready time
@@ -100,10 +97,10 @@ export function estimateReadyTime(
   }
 
   const queueText = activeOrdersInQueue > 0
-    ? `${activeOrdersInQueue} active order${activeOrdersInQueue > 1 ? 's' : ''} in queue`
+    ? `${activeOrdersInQueue} order${activeOrdersInQueue > 1 ? 's' : ''} ahead in queue`
     : 'clear workshop queue';
 
-  const explanation = `Calculated from ${params.service} protocol, ${complexityReason}, and ${queueText}.`;
+  const explanation = `Based on ${params.service} service, ${complexityReason}, and ${queueText}.`;
 
   return {
     estimatedReadyAt: formattedTime,
@@ -111,6 +108,6 @@ export function estimateReadyTime(
     estimatedHours: totalHours,
     explanation,
     confidenceLevel: activeOrdersInQueue > 4 ? 'High Workload Estimate' : 'Standard Estimate',
-    disclaimer: 'AI-assisted estimate based on workload and garment profile. Actual completion may vary slightly.',
+    disclaimer: 'AI-assisted estimate based on workload and garment profile. Actual completion may vary.',
   };
 }

@@ -5,7 +5,6 @@ const STORAGE_KEY = 'cleantrack_orders_v1';
 
 export function getInitialDemoOrders(): Order[] {
   const now = new Date();
-  const todayDateStr = now.toLocaleDateString([], { month: 'short', day: 'numeric' });
 
   return [
     {
@@ -18,7 +17,7 @@ export function getInitialDemoOrders(): Order[] {
       status: 'CLEANING',
       createdAt: new Date(now.getTime() - 2.5 * 3600 * 1000).toISOString(),
       estimatedReadyAt: 'Today around 6:30 PM',
-      estimationReason: 'Calculated from Dry Cleaning protocol, structured blazer tailoring, and 2 active orders ahead in queue.',
+      estimationReason: 'Based on Dry Cleaning service, structured garment shaping, and 2 orders ahead in queue.',
     },
     {
       id: 'DC1025',
@@ -29,8 +28,8 @@ export function getInitialDemoOrders(): Order[] {
       notes: 'Press lapels with sharp crease; wooden hanger requested.',
       status: 'READY_FOR_PICKUP',
       createdAt: new Date(now.getTime() - 6 * 3600 * 1000).toISOString(),
-      estimatedReadyAt: '', // MUST NOT have estimated ready time once ready for pickup
-      readySince: `${todayDateStr} at 3:15 PM`,
+      estimatedReadyAt: '', // HARD UX RULE: MUST NOT have estimated ready time once ready for pickup
+      readySince: '3:15 PM',
       estimationReason: '',
     },
     {
@@ -43,7 +42,7 @@ export function getInitialDemoOrders(): Order[] {
       status: 'RECEIVED',
       createdAt: new Date(now.getTime() - 0.5 * 3600 * 1000).toISOString(),
       estimatedReadyAt: 'Today around 5:00 PM',
-      estimationReason: 'Calculated from Ironing protocol, standard cotton batching, and clear workshop queue.',
+      estimationReason: 'Based on Ironing service, standard garment batching, and clear workshop queue.',
     },
   ];
 }
@@ -115,22 +114,27 @@ class OrderRepository {
     };
 
     if (newStatus === 'READY_FOR_PICKUP') {
-      // Rule: Set readySince and blank out estimatedReadyAt
-      updated.readySince = `Today at ${timeStr}`;
+      // Hard UX Rule: Blank out estimatedReadyAt and set readySince
+      updated.readySince = timeStr;
+      updated.collectedAt = undefined;
       updated.estimatedReadyAt = '';
+      updated.estimationReason = '';
     } else if (newStatus === 'COLLECTED') {
-      updated.collectedAt = `Today at ${timeStr}`;
+      // Hard UX Rule: Blank out estimatedReadyAt and record collected timestamp
+      updated.collectedAt = timeStr;
       updated.estimatedReadyAt = '';
-    } else if (newStatus === 'CLEANING' || newStatus === 'QUALITY_CHECK' || newStatus === 'RECEIVED') {
-      // If moving back or within processing, ensure estimate exists if blank
-      if (!updated.estimatedReadyAt) {
-        const est = estimateReadyTime(
-          { garment: updated.garment, service: updated.service, createdAt: updated.createdAt },
-          orders
-        );
-        updated.estimatedReadyAt = est.estimatedReadyAt;
-        updated.estimationReason = est.explanation;
-      }
+      updated.estimationReason = '';
+    } else if (newStatus === 'RECEIVED' || newStatus === 'CLEANING' || newStatus === 'QUALITY_CHECK') {
+      // For in-progress states (including if moving backwards in a demo)
+      updated.readySince = undefined;
+      updated.collectedAt = undefined;
+
+      const est = estimateReadyTime(
+        { garment: updated.garment, service: updated.service, createdAt: updated.createdAt },
+        orders
+      );
+      updated.estimatedReadyAt = est.estimatedReadyAt;
+      updated.estimationReason = est.explanation;
     }
 
     orders[index] = updated;

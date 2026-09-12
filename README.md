@@ -196,7 +196,7 @@ cleantrack/
 ### Steps
 1. Navigate to the project directory:
    ```bash
-   cd /Users/haji/.gemini/antigravity/scratch/cleantrack
+   cd cleantrack
    ```
 2. Install dependencies:
    ```bash

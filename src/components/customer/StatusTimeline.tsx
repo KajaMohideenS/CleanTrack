@@ -21,7 +21,7 @@ export const StatusTimeline: React.FC<StatusTimelineProps> = ({ currentStatus })
             const percent = currentStatus === 'COLLECTED' ? 100 : (activeIdx / (STATUS_SEQUENCE.length - 1)) * 100;
             return (
               <div
-                className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-sky-600 transition-all duration-500 ease-out z-0"
+                className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-sky-600 transition-all duration-300 ease-out z-0"
                 style={{ width: `${percent}%` }}
               />
             );
@@ -34,11 +34,11 @@ export const StatusTimeline: React.FC<StatusTimelineProps> = ({ currentStatus })
             return (
               <div key={status} className="relative z-10 flex flex-col items-center group">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
                     state === 'completed'
                       ? 'bg-sky-600 text-white shadow-xs'
                       : state === 'current'
-                      ? 'bg-white border-2 border-sky-600 text-sky-700 shadow-md ring-4 ring-sky-100'
+                      ? 'bg-white border-2 border-sky-600 text-sky-700 shadow-xs ring-4 ring-sky-50'
                       : 'bg-white border-2 border-slate-300 text-slate-400'
                   }`}
                   aria-label={`Step ${index + 1}: ${label} (${state})`}
@@ -46,7 +46,7 @@ export const StatusTimeline: React.FC<StatusTimelineProps> = ({ currentStatus })
                   {state === 'completed' ? (
                     <Check className="w-4 h-4 stroke-[2.5]" />
                   ) : state === 'current' ? (
-                    <span className="w-2.5 h-2.5 rounded-full bg-sky-600 animate-pulse" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-sky-600" />
                   ) : (
                     <span className="text-xs font-semibold text-slate-400">{index + 1}</span>
                   )}
@@ -93,14 +93,14 @@ export const StatusTimeline: React.FC<StatusTimelineProps> = ({ currentStatus })
                   state === 'completed'
                     ? 'bg-sky-600 text-white shadow-xs'
                     : state === 'current'
-                    ? 'bg-white border-2 border-sky-600 text-sky-700 shadow-md ring-4 ring-sky-100'
+                    ? 'bg-white border-2 border-sky-600 text-sky-700 shadow-xs ring-4 ring-sky-50'
                     : 'bg-white border-2 border-slate-300 text-slate-400'
                 }`}
               >
                 {state === 'completed' ? (
                   <Check className="w-4 h-4 stroke-[2.5]" />
                 ) : state === 'current' ? (
-                  <span className="w-2.5 h-2.5 rounded-full bg-sky-600 animate-pulse" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-sky-600" />
                 ) : (
                   <span className="text-xs font-semibold text-slate-400">{index + 1}</span>
                 )}

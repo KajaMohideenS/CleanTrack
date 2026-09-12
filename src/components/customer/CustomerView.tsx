@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useOrders } from '../../context/OrderContext';
 import { StatusTimeline } from './StatusTimeline';
 import { ReadyTimeCard } from './ReadyTimeCard';
@@ -9,6 +9,12 @@ export const CustomerView: React.FC = () => {
   const { orders, selectedOrderId, setSelectedOrderId, getOrder } = useOrders();
   const [searchInput, setSearchInput] = useState(selectedOrderId);
   const [hasSearched, setHasSearched] = useState(true);
+
+  // Keep search box input in sync whenever selectedOrderId changes externally
+  useEffect(() => {
+    setSearchInput(selectedOrderId);
+    setHasSearched(true);
+  }, [selectedOrderId]);
 
   const currentOrder = getOrder(selectedOrderId);
 
@@ -61,14 +67,14 @@ export const CustomerView: React.FC = () => {
           </button>
         </form>
 
-        {/* Quick Demo Selector Chips for easy 2-minute evaluation */}
+        {/* Quick Demo Selector Chips for easy evaluation */}
         <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs text-slate-500">
           <span className="font-medium text-slate-400">Demo orders:</span>
           {orders.slice(0, 4).map((o) => (
             <button
               key={o.id}
               onClick={() => handleQuickSelect(o.id)}
-              className={`px-2.5 py-1 rounded-lg border text-xs font-medium transition-all ${
+              className={`px-2.5 py-1 rounded-lg border text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-sky-500 ${
                 selectedOrderId === o.id
                   ? 'bg-sky-50 border-sky-300 text-sky-800 font-semibold'
                   : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300'
@@ -82,13 +88,13 @@ export const CustomerView: React.FC = () => {
 
       {/* Order Status Display Card */}
       {currentOrder ? (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden divide-y divide-slate-100">
           {/* Order Header Summary */}
-          <div className="p-5 sm:p-6 bg-gradient-to-b from-slate-50/70 to-white">
+          <div className="p-5 sm:p-6 bg-slate-50/60 border-b border-slate-100">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-sky-700 bg-sky-100/70 px-2 py-0.5 rounded tracking-wider">
+                  <span className="text-xs font-bold text-sky-700 bg-sky-100/70 px-2 py-0.5 rounded tracking-wider font-mono">
                     ORDER #{currentOrder.id}
                   </span>
                   <span className="text-xs text-slate-400 font-medium">
@@ -129,7 +135,7 @@ export const CustomerView: React.FC = () => {
           </div>
 
           {/* AI Estimate & Pickup Information */}
-          <div className="p-5 sm:p-6 bg-slate-50/50">
+          <div className="p-5 sm:p-6 bg-slate-50/40">
             <ReadyTimeCard order={currentOrder} />
 
             {/* Special Instructions / Notes */}
@@ -152,12 +158,12 @@ export const CustomerView: React.FC = () => {
           </div>
           <h3 className="text-base font-bold text-slate-900">Order Not Found</h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-            We couldn't locate an order with ID <span className="font-semibold text-slate-700">"{selectedOrderId}"</span>. Please check the receipt paper ticket handed to you by the counter staff.
+            We couldn't locate an order with ID <span className="font-semibold text-slate-700">"{selectedOrderId}"</span>. Please check the paper receipt handed to you by the counter staff.
           </p>
           <div className="pt-2">
             <button
               onClick={() => handleQuickSelect('DC1024')}
-              className="text-xs font-semibold text-sky-600 hover:text-sky-800 underline underline-offset-2"
+              className="text-xs font-semibold text-sky-600 hover:text-sky-800 underline underline-offset-2 focus:outline-none focus:ring-2 focus:ring-sky-500 rounded"
             >
               Try demo order DC1024 instead
             </button>
